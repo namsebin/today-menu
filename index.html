@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>오늘 뭐 먹지? 🍽️</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Pretendard', -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.5) rotate(-10deg); }
+      60% { transform: scale(1.1) rotate(5deg); }
+      100% { opacity: 1; transform: scale(1) rotate(0); }
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0) rotate(0); }
+      25% { transform: translateX(-8px) rotate(-3deg); }
+      75% { transform: translateX(8px) rotate(3deg); }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    @keyframes gradient-shift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    @keyframes confetti-fall {
+      0% { transform: translateY(-20vh) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
+    .animate-fade-in-up { animation: fadeInUp 0.7s ease-out forwards; }
+    .animate-pop-in { animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+    .animate-shake { animation: shake 0.5s ease-in-out infinite; }
+    .animate-float { animation: float 3s ease-in-out infinite; }
+
+    .gradient-bg {
+      background: linear-gradient(135deg, #fef3c7 0%, #fce7f3 50%, #fed7aa 100%);
+      background-size: 200% 200%;
+      animation: gradient-shift 8s ease infinite;
+    }
+
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      pointer-events: none;
+      animation: confetti-fall 2.5s linear forwards;
+      z-index: 100;
+    }
+
+    .card-shadow {
+      box-shadow: 0 20px 60px -15px rgba(251, 146, 60, 0.3),
+                  0 10px 30px -10px rgba(236, 72, 153, 0.2);
+    }
+  </style>
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-6">
+
+  <main class="w-full max-w-md mx-auto">
+
+    <header class="text-center mb-8 animate-fade-in-up">
+      <div class="text-6xl mb-3 animate-float">🍽️</div>
+      <h1 class="text-4xl md:text-5xl font-black tracking-tight text-slate-800 mb-2">
+        오늘 뭐 먹지?
+      </h1>
+      <p class="text-slate-500 font-medium">
+        고민은 그만, 한 번에 정해드려요
+      </p>
+    </header>
+
+    <section id="card" class="bg-white/80 backdrop-blur-xl rounded-3xl card-shadow p-8 md:p-10 mb-6 min-h-[380px] flex flex-col items-center justify-center animate-fade-in-up" style="animation-delay: 0.15s; opacity: 0;">
+
+      <div id="initial-state" class="text-center">
+        <div class="text-8xl mb-6 animate-float">🤔</div>
+        <p class="text-slate-600 text-lg font-semibold mb-1">
+          아래 버튼을 눌러보세요
+        </p>
+        <p class="text-slate-400 text-sm">
+          오늘의 메뉴를 랜덤으로 골라드려요
+        </p>
+      </div>
+
+      <div id="loading-state" class="hidden text-center">
+        <div class="text-8xl mb-6 animate-shake">🎲</div>
+        <p class="text-slate-600 text-lg font-bold mb-3">
+          고민 중...
+        </p>
+        <div class="flex gap-1.5 justify-center">
+          <div class="w-2.5 h-2.5 bg-orange-400 rounded-full animate-bounce" style="animation-delay: 0s;"></div>
+          <div class="w-2.5 h-2.5 bg-pink-400 rounded-full animate-bounce" style="animation-delay: 0.15s;"></div>
+          <div class="w-2.5 h-2.5 bg-amber-400 rounded-full animate-bounce" style="animation-delay: 0.3s;"></div>
+        </div>
+      </div>
+
+      <div id="result-state" class="hidden text-center w-full">
+        <p class="text-sm font-bold text-orange-500 mb-3 tracking-widest">TODAY'S PICK</p>
+        <div id="result-emoji" class="text-8xl mb-4"></div>
+        <h2 id="result-name" class="text-4xl font-black text-slate-800 mb-2"></h2>
+        <p id="result-desc" class="text-slate-500 font-medium mb-6"></p>
+        <div class="inline-flex items-center gap-2 bg-gradient-to-r from-orange-100 to-pink-100 px-4 py-2 rounded-full">
+          <span class="text-xs font-bold text-orange-600" id="result-tag"></span>
+        </div>
+      </div>
+
+    </section>
+
+    <button id="pick-btn" class="w-full bg-gradient-to-r from-orange-500 via-pink-500 to-rose-500 hover:from-orange-600 hover:via-pink-600 hover:to-rose-600 text-white font-black text-lg py-5 rounded-2xl shadow-xl shadow-pink-500/30 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] animate-fade-in-up disabled:opacity-70 disabled:cursor-not-allowed" style="animation-delay: 0.3s; opacity: 0;">
+      <span id="btn-text">🎰 메뉴 뽑기</span>
+    </button>
+
+    <p class="text-center text-xs text-slate-400 mt-6 font-medium animate-fade-in-up" style="animation-delay: 0.45s; opacity: 0;">
+      마음에 안 들면 한 번 더 눌러보세요 ✨
+    </p>
+
+  </main>
+
+  <script>
+    const foods = [
+      { emoji: '🍲', name: '김치찌개', desc: '얼큰하고 든든한 한 그릇', tag: '#한식 #국물' },
+      { emoji: '🥓', name: '삼겹살', desc: '오늘은 고기가 땡기는 날', tag: '#한식 #고기' },
+      { emoji: '🍗', name: '치킨', desc: '실패 없는 선택, 치느님', tag: '#야식 #배달' },
+      { emoji: '🍕', name: '피자', desc: '치즈 당길 땐 역시 피자', tag: '#양식 #배달' },
+      { emoji: '🌶️', name: '떡볶이', desc: '매콤달콤 추억의 맛', tag: '#분식 #매운맛' },
+      { emoji: '🍣', name: '초밥', desc: '오늘은 좀 우아하게', tag: '#일식 #회' },
+      { emoji: '🍜', name: '라멘', desc: '진한 국물에 풍덩', tag: '#일식 #국물' },
+      { emoji: '🍝', name: '파스타', desc: '분위기 내기 좋은 선택', tag: '#양식 #면' },
+      { emoji: '🍔', name: '햄버거', desc: '빠르고 확실한 한 끼', tag: '#양식 #패스트푸드' },
+      { emoji: '🥶', name: '냉면', desc: '시원하게 한 그릇 뚝딱', tag: '#한식 #시원한' },
+      { emoji: '🍚', name: '비빔밥', desc: '건강하고 든든하게', tag: '#한식 #건강식' },
+      { emoji: '🍱', name: '돈까스', desc: '바삭함이 그리운 날', tag: '#일식 #튀김' },
+      { emoji: '🥟', name: '만두', desc: '한 입에 쏙, 간편한 행복', tag: '#중식 #분식' },
+      { emoji: '🌮', name: '타코', desc: '이국적인 기분 전환', tag: '#양식 #이색' },
+      { emoji: '🥩', name: '스테이크', desc: '특별한 날의 선택', tag: '#양식 #고기' },
+      { emoji: '🍛', name: '카레', desc: '따뜻하고 포근한 맛', tag: '#일식 #밥' },
+      { emoji: '🥗', name: '샐러드', desc: '가볍고 건강하게', tag: '#건강식 #다이어트' },
+      { emoji: '🍤', name: '마라탕', desc: '오늘은 제대로 매운맛', tag: '#중식 #매운맛' },
+      { emoji: '🍖', name: '곱창', desc: '소주 한 잔이 생각나는', tag: '#한식 #안주' },
+      { emoji: '🍙', name: '주먹밥', desc: '간단하지만 만족스러운', tag: '#일식 #간편식' },
+      { emoji: '🫕', name: '쌀국수', desc: '담백한 국물이 그리울 때', tag: '#아시안 #국물' },
+      { emoji: '🥘', name: '짜장면', desc: '고민될 땐 역시 중국집', tag: '#중식 #면' }
+    ];
+
+    const pickBtn = document.getElementById('pick-btn');
+    const btnText = document.getElementById('btn-text');
+    const initialState = document.getElementById('initial-state');
+    const loadingState = document.getElementById('loading-state');
+    const resultState = document.getElementById('result-state');
+
+    let lastPick = null;
+
+    function showState(state) {
+      [initialState, loadingState, resultState].forEach(el => el.classList.add('hidden'));
+      state.classList.remove('hidden');
+    }
+
+    function launchConfetti() {
+      const colors = ['#fb923c', '#ec4899', '#f59e0b', '#f43f5e', '#8b5cf6'];
+      for (let i = 0; i < 40; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.animationDelay = Math.random() * 0.3 + 's';
+        confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        document.body.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 3000);
+      }
+    }
+
+    function pickFood() {
+      let choice;
+      do {
+        choice = foods[Math.floor(Math.random() * foods.length)];
+      } while (foods.length > 1 && choice.name === lastPick);
+      lastPick = choice.name;
+      return choice;
+    }
+
+    pickBtn.addEventListener('click', () => {
+      pickBtn.disabled = true;
+      btnText.textContent = '고르는 중...';
+      showState(loadingState);
+
+      setTimeout(() => {
+        const food = pickFood();
+
+        document.getElementById('result-emoji').textContent = food.emoji;
+        document.getElementById('result-name').textContent = food.name;
+        document.getElementById('result-desc').textContent = food.desc;
+        document.getElementById('result-tag').textContent = food.tag;
+
+        resultState.classList.remove('hidden');
+        loadingState.classList.add('hidden');
+        initialState.classList.add('hidden');
+
+        const emojiEl = document.getElementById('result-emoji');
+        emojiEl.style.animation = 'none';
+        void emojiEl.offsetWidth;
+        emojiEl.style.animation = 'popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards';
+
+        launchConfetti();
+
+        pickBtn.disabled = false;
+        btnText.textContent = '🔄 다시 뽑기';
+      }, 1400);
+    });
+  </script>
+
+</body>
+</html>
